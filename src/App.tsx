@@ -21,7 +21,11 @@ export const App: React.FC = () => {
 
   // 1. Отримуємо все необхідне зі стору
   const authorId = useAppSelector(state => state.author.id);
-  const { items: posts, loading } = useAppSelector(state => state.posts);
+  const {
+    items: posts,
+    loaded,
+    hasError,
+  } = useAppSelector(state => state.posts);
   const selectedPostId = useAppSelector(state => state.selectedPost.id);
 
   // Знаходимо об'єкт вибраного поста для передачі в PostDetails
@@ -57,16 +61,28 @@ export const App: React.FC = () => {
               <div className="block" data-cy="MainContent">
                 {!authorId && <p data-cy="NoSelectedUser">No user selected</p>}
 
+                {authorId && loaded && <Loader />}
+
                 {/* Тепер це спрацює, бо loading більше не undefined */}
-                {authorId && loading && <Loader />}
+                {authorId && !loaded && hasError && (
+                  <div
+                    className="notification is-danger"
+                    data-cy="PostsLoadingError"
+                  >
+                    Something went wrong!
+                  </div>
+                )}
 
-                {/* PostsList з'явиться тільки ПІСЛЯ завершення завантаження */}
-                {authorId && !loading && posts.length > 0 && <PostsList />}
-
-                {authorId && !loading && posts.length === 0 && (
+                {/* Блок "No posts yet" — додаємо перевірку !hasError */}
+                {authorId && !loaded && !hasError && posts.length === 0 && (
                   <div className="notification is-warning" data-cy="NoPostsYet">
                     No posts yet
                   </div>
+                )}
+
+                {/* Список постів */}
+                {authorId && !loaded && !hasError && posts.length > 0 && (
+                  <PostsList />
                 )}
               </div>
             </div>

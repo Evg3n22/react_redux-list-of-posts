@@ -15,29 +15,29 @@ const postsSlice = createSlice({
   name: 'posts',
   initialState: {
     items: [] as Post[],
-    loading: false, // ВАЖЛИВО: саме loading, не loaded
+    loaded: false,
     hasError: false,
   },
   reducers: {
     clearPosts: state => {
       state.items = [];
-      state.loading = false;
+      state.loaded = false;
       state.hasError = false;
     },
   },
   extraReducers: builder => {
     builder
       .addCase(fetchPosts.pending, state => {
-        state.loading = true; // 1. Включаємо лоадер
-        state.items = []; // 2. МИТТЄВО видаляємо старі пости
+        state.loaded = true;
+        state.items = [];
         state.hasError = false;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.items = action.payload;
-        state.loading = false; // 3. Вимикаємо лоадер
+        state.loaded = false;
       })
       .addCase(fetchPosts.rejected, state => {
-        state.loading = false;
+        state.loaded = false;
         state.hasError = true;
       });
   },

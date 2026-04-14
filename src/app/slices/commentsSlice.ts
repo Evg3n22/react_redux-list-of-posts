@@ -7,13 +7,13 @@ type CommentsState = {
   loaded: boolean;
   hasError: boolean;
   // Зберігаємо коментарі у форматі { [postId]: Comment[] }
-  byPostId: Record<number, Comment[]>;
+  items: Record<number, Comment[]>;
 };
 
 const initialState: CommentsState = {
   loaded: false,
   hasError: false,
-  byPostId: {},
+  items: {},
 };
 
 export const fetchComments = createAsyncThunk(
@@ -49,7 +49,7 @@ const commentsSlice = createSlice({
       })
       .addCase(fetchComments.fulfilled, (state, action) => {
         state.loaded = true;
-        state.byPostId[action.meta.arg] = action.payload;
+        state.items[action.meta.arg] = action.payload;
       })
       .addCase(fetchComments.rejected, state => {
         state.loaded = true;
@@ -59,16 +59,16 @@ const commentsSlice = createSlice({
       .addCase(addComment.fulfilled, (state, action) => {
         const { postId } = action.payload; // сервер поверне об'єкт з postId
 
-        if (state.byPostId[postId]) {
-          state.byPostId[postId].push(action.payload);
+        if (state.items[postId]) {
+          state.items[postId].push(action.payload);
         }
       })
       // Delete (Optimistic update можна реалізувати в pending, але тут зробимо простіше)
       .addCase(deleteComment.fulfilled, (state, action) => {
         const { commentId, postId } = action.payload;
 
-        if (state.byPostId[postId]) {
-          state.byPostId[postId] = state.byPostId[postId].filter(
+        if (state.items[postId]) {
+          state.items[postId] = state.items[postId].filter(
             c => c.id !== commentId,
           );
         }

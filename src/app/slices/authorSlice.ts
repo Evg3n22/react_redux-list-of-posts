@@ -43,4 +43,3 @@ export const selectedPostSlice = createSlice({
 
 export default authorSlice.reducer;
 export const { setAuthor } = authorSlice.actions;
-export const { setSelectedPost, clearSelectedPost } = selectedPostSlice.actions;

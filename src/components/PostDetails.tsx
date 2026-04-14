@@ -19,9 +19,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   const dispatch = useAppDispatch();
 
   // Отримуємо дані для конкретного поста
-  const comments = useAppSelector(
-    state => state.comments.byPostId[post.id] || [],
-  );
+  const comments = useAppSelector(state => state.comments.items[post.id] || []);
   const loaded = useAppSelector(state => state.comments.loaded);
   const hasError = useAppSelector(state => state.comments.hasError);
 
