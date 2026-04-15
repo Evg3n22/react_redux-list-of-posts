@@ -125,7 +125,7 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             onChange={handleChange}
             disabled={submitting}
           />
-          <span className="icon is-small is-left">
+          <span className="icon is-small is-left" data-cy="ErrorIcon">
             <i className="fas fa-envelope" />
           </span>
           {errors.email && (

@@ -5,9 +5,9 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { setAuthor } from '../app/slices/authorSlice'; // Перевірте шлях до slices
 
 export const UserSelector: React.FC = () => {
-  const dispatch = useAppDispatch();
   const { items: users, loaded } = useAppSelector(state => state.users);
   const authorId = useAppSelector(state => state.author.id);
+  const dispatch = useAppDispatch();
 
   const selectedUser = users.find(user => user.id === authorId) || null;
   const [expanded, setExpanded] = useState(false);
@@ -47,11 +47,12 @@ export const UserSelector: React.FC = () => {
 
       <div className="dropdown-menu" role="menu">
         <div className="dropdown-content">
-          {!loaded &&
+          {loaded &&
             users.map(user => (
               <a
                 key={user.id}
                 href={`#user-${user.id}`}
+                data-cy="User" // Важливо для тестів
                 onClick={e => {
                   e.preventDefault();
                   dispatch(setAuthor(user.id));

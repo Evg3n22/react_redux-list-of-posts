@@ -1,58 +1,46 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable prettier/prettier */
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { User } from '../../types/User';
+import { getUsers } from '../../api/users';
 
-type UsersState = {
-  items: User[];
-  loaded: boolean;
-  error: string | null;
-};
-
-const initialState: UsersState = {
-  items: [],
-  loaded: false,
-  error: null,
-};
-
-// eslint-disable-next-line prettier/prettier
-export const fetchUsers = createAsyncThunk<User[], void, {rejectValue: string}>(
-  'users/fetch',
+export const fetchUsers = createAsyncThunk(
+  'users/fetch', 
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch('https://jsonplaceholder.typicode.com/users');
-
-      if (!res.ok) {
-        throw new Error('Server Error');
-      }
-
-      return await res.json();
-    } catch (err) {
-      return rejectWithValue((err as Error).message);
+      return await getUsers();
+    } catch (error) {
+      return rejectWithValue('Failed to fetch users');
     }
-  });
+  }
+);
 
-export const usersSlice = createSlice({
+const usersSlice = createSlice({
   name: 'users',
-  initialState,
+  initialState: {
+    items: [] as User[],
+    loaded: false,
+    hasError: false,
+    error: null as string | null,
+  },
   reducers: {},
-  extraReducers: builder => {
-    /* eslint-disable no-param-reassign */
+  extraReducers: (builder) => {
     builder
-      .addCase(fetchUsers.pending, state => {
-        state.loaded = true;
+      .addCase(fetchUsers.pending, (state) => {
+        state.loaded = false; // Завантаження триває
+        state.hasError = false;
         state.error = null;
       })
-      .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
+      .addCase(fetchUsers.fulfilled, (state, action) => {
         state.items = action.payload;
-        state.loaded = false;
+        state.loaded = true; // Завантаження успішно завершено
       })
       .addCase(fetchUsers.rejected, (state, action) => {
-        state.loaded = false;
-        state.error = action.payload || 'Failed to fetch users';
+        state.loaded = true; // Спроба завантаження завершена (хоч і невдало)
+        state.hasError = true;
+        state.error = (action.payload as string) || 'Failed to fetch users';
       });
-    /* eslint-enable no-param-reassign */
   },
 });
-
 
 export default usersSlice.reducer;
