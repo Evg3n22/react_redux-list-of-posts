@@ -1,21 +1,18 @@
 /* eslint-disable no-param-reassign */
-// app/slices/postsSlice.ts
+// src/app/slices/postsSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getUserPosts } from '../../api/posts';
 import { Post } from '../../types/Post';
 
-export const fetchPosts = createAsyncThunk(
-  'posts/fetch',
-  async (userId: number) => {
-    return getUserPosts(userId);
-  },
+export const fetchPosts = createAsyncThunk('posts/fetch', (userId: number) =>
+  getUserPosts(userId),
 );
 
 const postsSlice = createSlice({
   name: 'posts',
   initialState: {
     items: [] as Post[],
-    loaded: false,
+    loaded: false, // false означає "ще вантажиться"
     hasError: false,
   },
   reducers: {
@@ -28,16 +25,16 @@ const postsSlice = createSlice({
   extraReducers: builder => {
     builder
       .addCase(fetchPosts.pending, state => {
-        state.loaded = true;
-        state.items = [];
+        state.loaded = false; // Почали завантаження
         state.hasError = false;
+        state.items = [];
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.items = action.payload;
-        state.loaded = false;
+        state.loaded = true; // Завершили успішно
       })
       .addCase(fetchPosts.rejected, state => {
-        state.loaded = false;
+        state.loaded = true; // Завершили (хоч і з помилкою)
         state.hasError = true;
       });
   },

@@ -6,7 +6,7 @@ import { setAuthor } from '../app/slices/authorSlice'; // Перевірте ш�
 
 export const UserSelector: React.FC = () => {
   const dispatch = useAppDispatch();
-  const users = useAppSelector(state => state.users.items);
+  const { items: users, loaded } = useAppSelector(state => state.users);
   const authorId = useAppSelector(state => state.author.id);
 
   const selectedUser = users.find(user => user.id === authorId) || null;
@@ -47,22 +47,23 @@ export const UserSelector: React.FC = () => {
 
       <div className="dropdown-menu" role="menu">
         <div className="dropdown-content">
-          {users.map(user => (
-            <a
-              key={user.id}
-              href={`#user-${user.id}`}
-              onClick={e => {
-                e.preventDefault();
-                dispatch(setAuthor(user.id));
-                setExpanded(false);
-              }}
-              className={classNames('dropdown-item', {
-                'is-active': user.id === authorId,
-              })}
-            >
-              {user.name}
-            </a>
-          ))}
+          {!loaded &&
+            users.map(user => (
+              <a
+                key={user.id}
+                href={`#user-${user.id}`}
+                onClick={e => {
+                  e.preventDefault();
+                  dispatch(setAuthor(user.id));
+                  setExpanded(false);
+                }}
+                className={classNames('dropdown-item', {
+                  'is-active': user.id === authorId,
+                })}
+              >
+                {user.name}
+              </a>
+            ))}
         </div>
       </div>
     </div>

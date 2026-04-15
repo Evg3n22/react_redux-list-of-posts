@@ -4,13 +4,13 @@ import { User } from '../../types/User';
 
 type UsersState = {
   items: User[];
-  loading: boolean;
+  loaded: boolean;
   error: string | null;
 };
 
 const initialState: UsersState = {
   items: [],
-  loading: false,
+  loaded: false,
   error: null,
 };
 
@@ -39,15 +39,15 @@ export const usersSlice = createSlice({
     /* eslint-disable no-param-reassign */
     builder
       .addCase(fetchUsers.pending, state => {
-        state.loading = true;
+        state.loaded = true;
         state.error = null;
       })
       .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
         state.items = action.payload;
-        state.loading = false;
+        state.loaded = false;
       })
       .addCase(fetchUsers.rejected, (state, action) => {
-        state.loading = false;
+        state.loaded = false;
         state.error = action.payload || 'Failed to fetch users';
       });
     /* eslint-enable no-param-reassign */

@@ -1,78 +1,79 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable no-param-reassign */
+// src/app/slices/commentsSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Comment, CommentData } from '../../types/Comment';
 import * as commentsApi from '../../api/comments';
 
-type CommentsState = {
-  loaded: boolean;
-  hasError: boolean;
-  // Зберігаємо коментарі у форматі { [postId]: Comment[] }
-  items: Record<number, Comment[]>;
-};
-
-const initialState: CommentsState = {
-  loaded: false,
-  hasError: false,
-  items: {},
-};
-
-export const fetchComments = createAsyncThunk(
-  'comments/fetch',
-  (postId: number) => commentsApi.getPostComments(postId),
+export const fetchComments = createAsyncThunk('comments/fetch', (id: number) =>
+  commentsApi.getPostComments(id),
 );
 
 export const addComment = createAsyncThunk(
   'comments/add',
-  (data: { postId: number; comment: CommentData }) =>
-    commentsApi.createComment({ ...data.comment, postId: data.postId }),
+  (d: { postId: number; comment: CommentData }) =>
+    commentsApi.createComment({ ...d.comment, postId: d.postId }),
 );
 
 export const deleteComment = createAsyncThunk(
   'comments/delete',
-  async ({ commentId, postId }: { commentId: number; postId: number }) => {
-    await commentsApi.deleteComment(commentId);
+  async (d: { commentId: number; postId: number }) => {
+    await commentsApi.deleteComment(d.commentId);
 
-    return { commentId, postId };
+    return d;
   },
 );
 
 const commentsSlice = createSlice({
   name: 'comments',
-  initialState,
+  initialState: {
+    items: {} as Record<number, Comment[]>,
+    loaded: false,
+    hasError: false,
+  },
   reducers: {},
   extraReducers: builder => {
     builder
-      // Fetch
-      .addCase(fetchComments.pending, state => {
-        state.loaded = false;
-        state.hasError = false;
-      })
+      // 1. Спочатку ЗАВЖДИ йдуть .addCase()
       .addCase(fetchComments.fulfilled, (state, action) => {
         state.loaded = true;
         state.items[action.meta.arg] = action.payload;
       })
-      .addCase(fetchComments.rejected, state => {
-        state.loaded = true;
-        state.hasError = true;
-      })
-      // Add
       .addCase(addComment.fulfilled, (state, action) => {
-        const { postId } = action.payload; // сервер поверне об'єкт з postId
+        state.loaded = true;
+        const { postId } = action.payload;
 
-        if (state.items[postId]) {
-          state.items[postId].push(action.payload);
+        if (!state.items[postId]) {
+          state.items[postId] = [];
         }
+
+        state.items[postId].push(action.payload);
       })
-      // Delete (Optimistic update можна реалізувати в pending, але тут зробимо простіше)
       .addCase(deleteComment.fulfilled, (state, action) => {
-        const { commentId, postId } = action.payload;
+        state.loaded = true;
+        const { postId, commentId } = action.payload;
 
         if (state.items[postId]) {
           state.items[postId] = state.items[postId].filter(
             c => c.id !== commentId,
           );
         }
-      });
+      })
+      // 2. Потім додаємо .addMatcher()
+      .addMatcher(
+        action => action.type.endsWith('/pending'),
+        state => {
+          state.loaded = false;
+          state.hasError = false;
+        },
+      )
+      .addMatcher(
+        action => action.type.endsWith('/rejected'),
+        state => {
+          state.loaded = true;
+          state.hasError = true;
+        },
+      );
   },
 });
 

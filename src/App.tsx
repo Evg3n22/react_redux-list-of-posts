@@ -20,12 +20,12 @@ export const App: React.FC = () => {
   const dispatch = useAppDispatch();
 
   // 1. Отримуємо все необхідне зі стору
-  const authorId = useAppSelector(state => state.author.id);
   const {
     items: posts,
     loaded,
     hasError,
   } = useAppSelector(state => state.posts);
+  const authorId = useAppSelector(state => state.author.id);
   const selectedPostId = useAppSelector(state => state.selectedPost.id);
 
   // Знаходимо об'єкт вибраного поста для передачі в PostDetails
@@ -61,10 +61,11 @@ export const App: React.FC = () => {
               <div className="block" data-cy="MainContent">
                 {!authorId && <p data-cy="NoSelectedUser">No user selected</p>}
 
-                {authorId && loaded && <Loader />}
+                {/* 1. Loader показуємо, поки НЕ завантажено */}
+                {authorId && !loaded && <Loader />}
 
-                {/* Тепер це спрацює, бо loading більше не undefined */}
-                {authorId && !loaded && hasError && (
+                {/* 2. Помилка: завантаження завершено, але є error */}
+                {authorId && loaded && hasError && (
                   <div
                     className="notification is-danger"
                     data-cy="PostsLoadingError"
@@ -73,15 +74,15 @@ export const App: React.FC = () => {
                   </div>
                 )}
 
-                {/* Блок "No posts yet" — додаємо перевірку !hasError */}
-                {authorId && !loaded && !hasError && posts.length === 0 && (
+                {/* 3. Порожній список: завантажено, помилок немає, постів 0 */}
+                {authorId && loaded && !hasError && posts.length === 0 && (
                   <div className="notification is-warning" data-cy="NoPostsYet">
                     No posts yet
                   </div>
                 )}
 
-                {/* Список постів */}
-                {authorId && !loaded && !hasError && posts.length > 0 && (
+                {/* 4. Список постів: завантажено успішно, є дані */}
+                {authorId && loaded && !hasError && posts.length > 0 && (
                   <PostsList />
                 )}
               </div>
