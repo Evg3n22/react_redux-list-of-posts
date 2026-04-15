@@ -33,11 +33,10 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
     setIsFormVisible(false);
   }, [post.id, dispatch]);
 
-  const handleAddComment = (data: CommentData): Promise<void> => {
-    return dispatch(addComment({ postId: post.id, comment: data }))
-      .unwrap() // дозволяє виконати код після успішного завершення thunk
-      .then(() => setIsFormVisible(false))
-      .catch(() => {}); // помилку обробить extraReducers
+  const handleAddComment = (data: CommentData) => {
+    // Повертаємо проміс, щоб NewCommentForm міг обробити loading/errors самостійно
+    return dispatch(addComment({ postId: post.id, comment: data })).unwrap();
+    // .then(() => setIsFormVisible(false)) <-- ВИДАЛИ ЦЕЙ РЯДОК
   };
 
   const handleDeleteComment = (commentId: number) => {
@@ -107,9 +106,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </button>
         )}
 
-        {loaded && !hasError && isFormVisible && (
-          <NewCommentForm onSubmit={handleAddComment} />
-        )}
+        {isFormVisible && <NewCommentForm onSubmit={handleAddComment} />}
       </div>
     </div>
   );

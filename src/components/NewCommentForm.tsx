@@ -59,22 +59,20 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
     setHasError(false);
 
     try {
-      // Тут викликається dispatch(addComment(...)).unwrap() з PostDetails
       await onSubmit({ name, email, body });
-
-      // Очищуємо лише текст коментаря, зберігаючи ім'я та пошту для зручності
+      // Якщо успішно — чистимо ТІЛЬКИ текст, форма залишається
       setValues(current => ({ ...current, body: '' }));
     } catch (error) {
-      // Якщо сервер повернув помилку
       setHasError(true);
     } finally {
+      // ВАЖЛИВО: лоадер вимикається тут
       setSubmitting(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} onReset={clearForm} data-cy="NewCommentForm">
-      {/* Загальне повідомлення про помилку запиту */}
+      {/* Повідомлення про помилку */}
       {hasError && (
         <div className="notification is-danger" data-cy="ErrorMessage">
           {`Can't add a comment. Please try again later.`}
@@ -101,12 +99,19 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             <i className="fas fa-user" />
           </span>
           {errors.name && (
-            <span className="icon is-small is-right has-text-danger">
+            <span
+              className="icon is-small is-right has-text-danger"
+              data-cy="ErrorIcon"
+            >
               <i className="fas fa-exclamation-triangle" />
             </span>
           )}
         </div>
-        {errors.name && <p className="help is-danger">Name is required</p>}
+        {errors.name && (
+          <p className="help is-danger" data-cy="ErrorMessage">
+            Name is required
+          </p>
+        )}
       </div>
 
       {/* Поле Email */}
@@ -125,16 +130,25 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             onChange={handleChange}
             disabled={submitting}
           />
-          <span className="icon is-small is-left" data-cy="ErrorIcon">
+          {/* ТУТ: ПРИБИРАЄМО data-cy="ErrorIcon" звідси, бо це просто іконка пошти */}
+          <span className="icon is-small is-left">
             <i className="fas fa-envelope" />
           </span>
+          {/* ТУТ: додаємо data-cy="ErrorIcon" сюди */}
           {errors.email && (
-            <span className="icon is-small is-right has-text-danger">
+            <span
+              className="icon is-small is-right has-text-danger"
+              data-cy="ErrorIcon"
+            >
               <i className="fas fa-exclamation-triangle" />
             </span>
           )}
         </div>
-        {errors.email && <p className="help is-danger">Email is required</p>}
+        {errors.email && (
+          <p className="help is-danger" data-cy="ErrorMessage">
+            Email is required
+          </p>
+        )}
       </div>
 
       {/* Поле Тексту */}
@@ -153,10 +167,13 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             disabled={submitting}
           />
         </div>
-        {errors.body && <p className="help is-danger">Enter some text</p>}
+        {errors.body && (
+          <p className="help is-danger" data-cy="ErrorMessage">
+            Enter some text
+          </p>
+        )}
       </div>
 
-      {/* Кнопки */}
       <div className="field is-grouped">
         <div className="control">
           <button
@@ -164,6 +181,7 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             className={classNames('button', 'is-link', {
               'is-loading': submitting,
             })}
+            // ПРИБИРАЄМО data-cy="NewCommentForm" звідси
             disabled={submitting}
           >
             Add
@@ -173,6 +191,7 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
           <button
             type="reset"
             className="button is-link is-light"
+            // ПРИБИРАЄМО data-cy="NewCommentForm" звідси
             disabled={submitting}
           >
             Clear
